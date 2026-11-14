@@ -4,11 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#071412">
-  <meta name="description" content="RapidFire Lab：25 公尺快射單鏡頭姿態、關節角度、槍枝 ROI 與軀幹穩定度分析。">
+  <meta name="description" content="RapidFire Lab：25 公尺快射單次射擊的綠燈反應、舉槍、穩定、擊發與回復影像分析。">
   <title>RapidFire Lab｜25 公尺快射影像分析</title>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://storage.googleapis.com" crossorigin>
-  <link rel="stylesheet" href="styles.css?v=1">
+  <link rel="stylesheet" href="styles.css?v=2">
+  <link rel="stylesheet" href="single-shot.css?v=2">
 </head>
 <body>
   <header class="topbar">
@@ -18,15 +19,20 @@
 
   <main>
     <section class="hero">
-      <div><p class="eyebrow">RAPID FIRE · POSE · GUN ROI · STABILITY</p><h1>看見每一組快射的動作一致性</h1><p>以單鏡頭骨架與雙 ROI，對照肩臂投影角、肘角、軀幹控制、槍枝晃動與疑似擊發後回復節奏。（註：單鏡頭姿態推估，受拍攝視角影響）</p></div>
+      <div><p class="eyebrow">GREEN LIGHT · RAISE · SETTLE · SHOT</p><h1>看懂一發快射，從綠燈到穩定</h1><p>聚焦單次射擊：量化反應、舉槍、進入穩定區、疑似擊發與回復節奏，並同步觀察肩臂、肘角、軀幹與槍枝微動。（單鏡頭姿態推估，受拍攝視角影響）</p></div>
       <div class="hero-state"><span id="stateDot"></span><b id="stateText">等待影片</b><small id="timeText">00:00.0</small></div>
     </section>
 
     <section class="workflow panel">
       <div class="step active"><span>01</span><div><b>載入影片</b><small>相機或本機檔案</small></div></div>
       <div class="step"><span>02</span><div><b>框選射手</b><small>排除相鄰靶位</small></div></div>
-      <div class="step"><span>03</span><div><b>點選槍枝</b><small>建立微動 ROI</small></div></div>
-      <div class="step"><span>04</span><div><b>選取區間</b><small>分析單組快射</small></div></div>
+      <div class="step"><span>03</span><div><b>標記槍枝／綠燈</b><small>建立事件 ROI</small></div></div>
+      <div class="step"><span>04</span><div><b>選取單發</b><small>分析一次完整動作</small></div></div>
+    </section>
+
+    <section class="rules-strip panel" aria-label="ISSF 快射時間規則">
+      <div><p class="kicker">ISSF 2026 · QUALIFICATION</p><h2>5 發系列的時間限制</h2><p>綠燈亮起／靶面開始轉正時開始計時；每組 5 發須在指定時間內完成。單發平均節奏是換算參考，不是規則中的單發上限。<a href="https://www.issf-sports.org/rules" target="_blank" rel="noreferrer">查看 ISSF 官方規則</a></p></div>
+      <div class="rule-pills"><button class="rule-pill" data-limit="8"><b>8 秒</b><span>平均 1.6 秒／發</span></button><button class="rule-pill" data-limit="6"><b>6 秒</b><span>平均 1.2 秒／發</span></button><button class="rule-pill active" data-limit="4"><b>4 秒</b><span>平均 0.8 秒／發</span></button></div>
     </section>
 
     <section class="workspace">
@@ -45,13 +51,15 @@
           <button class="button" id="demoBtn">體驗示範</button>
           <button class="button" id="athleteBtn" disabled>框選射手 ROI</button>
           <button class="button" id="gunBtn" disabled>點選槍枝 ROI</button>
+          <button class="button" id="signalBtn" disabled>點選綠燈 ROI（選用）</button>
           <button class="button ghost" id="resetBtn" disabled>重設 ROI</button>
         </div>
         <div class="range-box hidden" id="rangeBox">
-          <div class="range-head"><b>選取分析區間</b><span><i id="startLabel">00:00.0</i> — <i id="endLabel">00:00.0</i></span></div>
+          <div class="range-head"><b>選取單次射擊區間</b><span><i id="startLabel">00:00.0</i> — <i id="endLabel">00:00.0</i></span></div>
           <label>開始<input id="rangeStart" type="range" min="0" max="10" step="0.05" value="0"></label>
           <label>結束<input id="rangeEnd" type="range" min="0" max="10" step="0.05" value="10"></label>
-          <div class="range-actions"><button class="button" id="previewBtn">預覽區間</button><button class="button primary" id="analyzeBtn" disabled>開始分析</button></div>
+          <p class="range-hint">建議包含綠燈前約 0.5 秒、完整舉槍、一次擊發與回復。未設定綠燈 ROI 時，區間起點會作為計時基準。</p>
+          <div class="range-actions"><button class="button" id="previewBtn">預覽單發</button><button class="button primary" id="analyzeBtn" disabled>分析這一發</button></div>
         </div>
         <div class="settings">
           <label>持槍側<select id="armSide"><option value="right">右手</option><option value="left">左手</option></select></label>
@@ -75,16 +83,30 @@
       </aside>
     </section>
 
+    <section class="panel shot-story" id="shotStory">
+      <div class="panel-head"><div><p class="kicker">ONE SHOT JOURNEY</p><h2>這一發的動作旅程</h2></div><span class="quality" id="eventQuality">等待分析</span></div>
+      <div class="phase-track" id="phaseTrack"><div class="phase green"><b>綠燈</b><span>0.00 s</span></div><div class="phase react"><b>反應</b><span>—</span></div><div class="phase raise"><b>舉槍</b><span>—</span></div><div class="phase settle"><b>穩定</b><span>—</span></div><div class="phase fire"><b>擊發</b><span>—</span></div></div>
+      <div class="journey-grid">
+        <article><span>綠燈 → 動作啟動</span><b id="rReaction">—</b><small>視覺反應候選時間</small></article>
+        <article><span>動作啟動 → 舉槍完成</span><b id="rRaise">—</b><small>舉槍時間</small></article>
+        <article><span>舉槍完成 → 進入穩定</span><b id="rSettle">—</b><small>穩定建立時間</small></article>
+        <article><span>穩定 → 疑似擊發</span><b id="rHold">—</b><small>有效穩定視窗</small></article>
+        <article><span>綠燈 → 疑似擊發</span><b id="rShotTime">—</b><small>單發總歷時</small></article>
+        <article class="budget-card"><span>4 秒系列節奏尺</span><b id="rBudget">—</b><div class="budget-bar"><i id="budgetFill"></i></div><small id="budgetNote">以目前選擇的系列時間換算</small></article>
+      </div>
+      <div class="coach-callout"><b id="coachTitle">運科判讀會出現在這裡</b><p id="coachText">完成單次射擊分析後，系統會指出時間主要花在反應、舉槍或穩定建立；這是教練輔助線索，不是成績判定。</p></div>
+    </section>
+
     <section class="panel results" id="results">
-      <div class="panel-head"><div><p class="kicker">SESSION SUMMARY</p><h2>本次快射分析</h2></div><div class="actions"><button class="button" id="csvBtn" disabled>匯出 CSV</button><button class="button" id="reportBtn" disabled>下載 PNG 報告</button></div></div>
-      <div class="result-empty" id="resultEmpty">完成一段分析後，這裡會比較關節角度變異、槍枝晃動、軀幹穩定與疑似擊發峰值。</div>
+      <div class="panel-head"><div><p class="kicker">SINGLE-SHOT SUMMARY</p><h2>單次射擊穩定性</h2></div><div class="actions"><button class="button" id="csvBtn" disabled>匯出 CSV</button><button class="button" id="reportBtn" disabled>下載 PNG 報告</button></div></div>
+      <div class="result-empty" id="resultEmpty">完成一發分析後，這裡會整理穩定區內的關節角度變異、槍枝晃動與疑似擊發事件。</div>
       <div class="result-grid hidden" id="resultGrid">
         <article><span>肩臂角變異</span><b id="rShoulder">—</b><small>標準差</small></article>
         <article><span>肘角變異</span><b id="rElbow">—</b><small>標準差</small></article>
         <article><span>軀幹傾角變異</span><b id="rTrunk">—</b><small>標準差</small></article>
         <article><span>槍枝上下晃動</span><b id="rGunY">—</b><small>射手 ROI 高度 %</small></article>
         <article><span>槍枝水平晃動</span><b id="rGunX">—</b><small>射手 ROI 寬度 %</small></article>
-        <article><span>疑似擊發峰值</span><b id="rShots">—</b><small>需由教練確認</small></article>
+        <article><span>疑似擊發事件</span><b id="rShots">—</b><small>本版只取單一候選</small></article>
       </div>
       <div class="caution"><b>量測邊界與聲明</b><p>所有數值為單鏡頭影像估算（單鏡頭姿態推估，受拍攝視角影響），會受到拍攝角度、人物像素、遮擋、壓縮、相機防震與骨架模型誤差影響。小數位不代表儀器精度；不得宣告為臨床級或真實 3D 關節角，不得取代瞄準軌跡儀、光學動作捕捉、醫療判斷或教練專業判讀。</p></div>
     </section>
@@ -94,6 +116,6 @@
     <div><b>RapidFire Lab</b><span>25 公尺快射影像分析</span></div>
     <div class="credits"><small>© 2026 臺北市立大學運動健康科學系 傅思凱教授。保留所有權利。</small></div>
   </footer>
-  <script type="module" src="app.js?v=1"></script>
+  <script type="module" src="app.js?v=2"></script>
 </body>
 </html>
