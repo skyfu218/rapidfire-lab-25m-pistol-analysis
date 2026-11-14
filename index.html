@@ -12,6 +12,8 @@
   <link rel="stylesheet" href="single-shot.css?v=2">
   <link rel="stylesheet" href="comparison.css?v=3">
   <link rel="stylesheet" href="roi-seek.css?v=4">
+  <link rel="stylesheet" href="sync-lock.css?v=5">
+  <link rel="stylesheet" href="sync-lock-state.css?v=5">
 </head>
 <body>
   <header class="topbar">
@@ -92,15 +94,16 @@
 
     <section class="panel comparison" id="comparison">
       <div class="panel-head"><div><p class="kicker">A / B SYNC COMPARE</p><h2>兩次動作同步比較</h2></div><span class="quality" id="syncState">等待兩次分析</span></div>
-      <div class="sync-actions"><button class="button active" id="syncLiftBtn" disabled>以舉槍點同步</button><button class="button" id="syncShotBtn" disabled>以射擊點同步</button><button class="button" id="syncPlayBtn" disabled>同步播放</button></div>
-      <div class="compare-videos"><article><header><b>試次 A</b><span id="compareName1">尚未分析</span></header><video id="compareVideo1" playsinline muted></video></article><article><header><b>試次 B</b><span id="compareName2">尚未分析</span></header><video id="compareVideo2" playsinline muted></video></article></div>
-      <div class="sync-timeline"><div><b id="syncLabel">同步點 0.00 s</b><span>拖動時，兩部影片與下方數值會一起更新</span></div><input id="syncSlider" type="range" min="-1" max="2" step="0.01" value="0" disabled><div class="event-rail"><i class="lift-mark">舉槍點</i><i class="shot-mark">射擊點</i></div></div>
+      <div class="sync-actions"><button class="button active" id="syncLiftBtn" disabled>自動對齊舉槍點</button><button class="button" id="syncShotBtn" disabled>自動對齊射擊點</button><button class="button lock-button" id="syncLockBtn" disabled><span>🔓</span> 人工鎖定同步</button><button class="button" id="syncPlayBtn" disabled>同步播放</button><label class="speed-control">同步速度<select id="syncSpeed"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option></select></label></div>
+      <div class="compare-videos"><article><header><b>試次 A</b><span id="compareName1">尚未分析</span></header><video id="compareVideo1" playsinline muted></video><div class="individual-controls"><button class="button" id="comparePlay1" disabled>播放 A</button><input id="compareSeek1" type="range" min="0" max="1" step="0.01" value="0" disabled aria-label="試次 A 時間軸"><b id="compareTime1">00:00.0</b><select id="compareSpeed1" disabled aria-label="試次 A 播放速度"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option></select></div></article><article><header><b>試次 B</b><span id="compareName2">尚未分析</span></header><video id="compareVideo2" playsinline muted></video><div class="individual-controls"><button class="button" id="comparePlay2" disabled>播放 B</button><input id="compareSeek2" type="range" min="0" max="1" step="0.01" value="0" disabled aria-label="試次 B 時間軸"><b id="compareTime2">00:00.0</b><select id="compareSpeed2" disabled aria-label="試次 B 播放速度"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option></select></div></article></div>
+      <div class="sync-timeline"><div><b id="syncLabel">尚未鎖定</b><span>先分別定位 A、B；按下鎖頭後，這裡會變成共同時間軸</span></div><input id="syncSlider" type="range" min="0" max="1" step="0.01" value="0" disabled><div class="event-rail"><i class="lift-mark">人工同步起點</i><i class="shot-mark">共同播放位置</i></div></div>
       <div class="compare-table" role="table" aria-label="雙試次即時角度比較"><div class="thead" role="row"><b>同步時點數值</b><b>試次 A</b><b>試次 B</b><b>差值 B−A</b></div><div role="row"><span>肩抬舉角（°）</span><b id="cShoulder1">—</b><b id="cShoulder2">—</b><b id="dShoulder">—</b></div><div role="row"><span>肘屈曲角（°）</span><b id="cElbow1">—</b><b id="cElbow2">—</b><b id="dElbow">—</b></div><div role="row"><span>軀幹側傾（°）</span><b id="cTrunk1">—</b><b id="cTrunk2">—</b><b id="dTrunk">—</b></div><div role="row"><span>槍枝上下位移（% ROI）</span><b id="cGun1">—</b><b id="cGun2">—</b><b id="dGun">—</b></div><div role="row"><span>舉槍完成相對高度（% ROI）</span><b id="cHeight1">—</b><b id="cHeight2">—</b><b id="dHeight">—</b></div><div role="row"><span>擊發後最大跳動（% ROI）</span><b id="cRecoil1">—</b><b id="cRecoil2">—</b><b id="dRecoil">—</b></div><div role="row"><span>回復時間（s）</span><b id="cRecovery1">—</b><b id="cRecovery2">—</b><b id="dRecovery">—</b></div></div>
     </section>
 
     <section class="panel shot-story" id="shotStory">
       <div class="panel-head"><div><p class="kicker">ONE SHOT JOURNEY</p><h2>這一發的動作旅程</h2></div><span class="quality" id="eventQuality">等待分析</span></div>
-      <div class="phase-track" id="phaseTrack"><div class="phase green"><b>綠燈</b><span>0.00 s</span></div><div class="phase react"><b>反應</b><span>—</span></div><div class="phase raise"><b>舉槍</b><span>—</span></div><div class="phase settle"><b>穩定</b><span>—</span></div><div class="phase fire"><b>擊發</b><span>—</span></div></div>
+      <div class="journey-ab"><article><header><b>試次 A</b><span id="journeyStatusA">等待分析</span></header><div class="phase-track" id="phaseTrackA"><div class="phase green"><b>綠燈</b><span>—</span></div><div class="phase react"><b>反應</b><span>—</span></div><div class="phase raise"><b>舉槍</b><span>—</span></div><div class="phase settle"><b>穩定</b><span>—</span></div><div class="phase fire"><b>擊發</b><span>—</span></div></div></article><article><header><b>試次 B</b><span id="journeyStatusB">等待分析</span></header><div class="phase-track" id="phaseTrackB"><div class="phase green"><b>綠燈</b><span>—</span></div><div class="phase react"><b>反應</b><span>—</span></div><div class="phase raise"><b>舉槍</b><span>—</span></div><div class="phase settle"><b>穩定</b><span>—</span></div><div class="phase fire"><b>擊發</b><span>—</span></div></div></article></div>
+      <div class="phase-track hidden" id="phaseTrack"><div class="phase green"><b>綠燈</b><span>0.00 s</span></div><div class="phase react"><b>反應</b><span>—</span></div><div class="phase raise"><b>舉槍</b><span>—</span></div><div class="phase settle"><b>穩定</b><span>—</span></div><div class="phase fire"><b>擊發</b><span>—</span></div></div>
       <div class="journey-grid">
         <article><span>綠燈 → 動作啟動</span><b id="rReaction">—</b><small>視覺反應候選時間</small></article>
         <article><span>動作啟動 → 舉槍完成</span><b id="rRaise">—</b><small>舉槍時間</small></article>
@@ -134,6 +137,6 @@
     <div><b>RapidFire Lab</b><span>25 公尺快射影像分析</span></div>
     <div class="credits"><small>© 2026 臺北市立大學運動健康科學系 傅思凱教授。保留所有權利。</small></div>
   </footer>
-  <script type="module" src="app.js?v=4"></script>
+  <script type="module" src="app.js?v=5"></script>
 </body>
 </html>
