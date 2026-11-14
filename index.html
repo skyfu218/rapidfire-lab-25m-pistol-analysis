@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#071412">
+  <meta name="description" content="RapidFire Lab：25 公尺快射單鏡頭姿態、關節角度、槍枝 ROI 與軀幹穩定度分析。">
+  <title>RapidFire Lab｜25 公尺快射影像分析</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://storage.googleapis.com" crossorigin>
+  <link rel="stylesheet" href="styles.css?v=1">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#"><span class="brand-mark"><i></i></span><span><b>RapidFire Lab</b><small>25M PISTOL MOTION ANALYSIS</small></span></a>
+    <span class="privacy"><i></i>影片只在本機處理</span>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div><p class="eyebrow">RAPID FIRE · POSE · GUN ROI · STABILITY</p><h1>看見每一組快射的動作一致性</h1><p>以單鏡頭骨架與雙 ROI，對照肩臂投影角、肘角、軀幹控制、槍枝晃動與疑似擊發後回復節奏。</p></div>
+      <div class="hero-state"><span id="stateDot"></span><b id="stateText">等待影片</b><small id="timeText">00:00.0</small></div>
+    </section>
+
+    <section class="workflow panel">
+      <div class="step active"><span>01</span><div><b>載入影片</b><small>相機或本機檔案</small></div></div>
+      <div class="step"><span>02</span><div><b>框選射手</b><small>排除相鄰靶位</small></div></div>
+      <div class="step"><span>03</span><div><b>點選槍枝</b><small>建立微動 ROI</small></div></div>
+      <div class="step"><span>04</span><div><b>選取區間</b><small>分析單組快射</small></div></div>
+    </section>
+
+    <section class="workspace">
+      <section class="panel capture">
+        <div class="panel-head"><div><p class="kicker">VIDEO WORKSPACE</p><h2>影片與骨架分析</h2></div><span class="quality" id="quality">尚未載入</span></div>
+        <div class="stage" id="stage">
+          <video id="video" playsinline muted controls></video>
+          <canvas id="overlay"></canvas>
+          <div class="empty" id="empty"><div class="target"><i></i></div><h3>匯入快射影片開始</h3><p>建議使用固定腳架、60 fps、完整拍到持槍手與軀幹。</p></div>
+          <div class="guide" id="guide">先匯入影片</div>
+          <div class="loading hidden" id="loading"><i></i>姿態模型載入中…</div>
+        </div>
+        <div class="actions">
+          <button class="button primary" id="uploadBtn">匯入影片</button><input id="fileInput" type="file" accept="video/*" hidden>
+          <button class="button" id="cameraBtn">啟動相機</button>
+          <button class="button" id="demoBtn">體驗示範</button>
+          <button class="button" id="athleteBtn" disabled>框選射手 ROI</button>
+          <button class="button" id="gunBtn" disabled>點選槍枝 ROI</button>
+          <button class="button ghost" id="resetBtn" disabled>重設 ROI</button>
+        </div>
+        <div class="range-box hidden" id="rangeBox">
+          <div class="range-head"><b>選取分析區間</b><span><i id="startLabel">00:00.0</i> — <i id="endLabel">00:00.0</i></span></div>
+          <label>開始<input id="rangeStart" type="range" min="0" max="10" step="0.05" value="0"></label>
+          <label>結束<input id="rangeEnd" type="range" min="0" max="10" step="0.05" value="10"></label>
+          <div class="range-actions"><button class="button" id="previewBtn">預覽區間</button><button class="button primary" id="analyzeBtn" disabled>開始分析</button></div>
+        </div>
+        <div class="settings">
+          <label>持槍側<select id="armSide"><option value="right">右手</option><option value="left">左手</option></select></label>
+          <label>分析上限<select id="sampleRate"><option value="15">15 FPS・省電</option><option value="30" selected>30 FPS</option><option value="60">60 FPS</option></select></label>
+          <label class="check"><input id="skeletonToggle" type="checkbox" checked>顯示骨架</label>
+        </div>
+      </section>
+
+      <aside class="analysis">
+        <section class="panel score-card">
+          <div class="panel-head"><div><p class="kicker">LIVE ESTIMATE</p><h2>即時判讀</h2></div><strong id="score">—</strong></div>
+          <p class="score-note" id="scoreNote">完成雙 ROI 設定後開始追蹤。</p>
+          <div class="metrics">
+            <article><span>肩臂投影角</span><b id="shoulderAngle">—</b><small>2D 投影，非純肩屈曲</small></article>
+            <article><span>持槍肘角</span><b id="elbowAngle">—</b><small>完全伸直接近 180°</small></article>
+            <article><span>軀幹側傾</span><b id="trunkAngle">—</b><small>相對垂直線</small></article>
+            <article><span>槍枝上下位移</span><b id="gunY">—</b><small>相對射手 ROI 高度</small></article>
+          </div>
+        </section>
+        <section class="panel chart-card"><div class="panel-head"><div><p class="kicker">TIME SERIES</p><h2>角度與穩定度時間軸</h2></div><span id="sampleCount">0 格</span></div><canvas id="chart" width="760" height="390"></canvas><div class="legend"><span class="lime">肩臂角</span><span class="blue">肘角</span><span class="amber">軀幹</span><span class="pink">槍枝 Y</span></div></section>
+      </aside>
+    </section>
+
+    <section class="panel results" id="results">
+      <div class="panel-head"><div><p class="kicker">SESSION SUMMARY</p><h2>本次快射分析</h2></div><div class="actions"><button class="button" id="csvBtn" disabled>匯出 CSV</button><button class="button" id="reportBtn" disabled>下載 PNG 報告</button></div></div>
+      <div class="result-empty" id="resultEmpty">完成一段分析後，這裡會比較關節角度變異、槍枝晃動、軀幹穩定與疑似擊發峰值。</div>
+      <div class="result-grid hidden" id="resultGrid">
+        <article><span>肩臂角變異</span><b id="rShoulder">—</b><small>標準差</small></article>
+        <article><span>肘角變異</span><b id="rElbow">—</b><small>標準差</small></article>
+        <article><span>軀幹傾角變異</span><b id="rTrunk">—</b><small>標準差</small></article>
+        <article><span>槍枝上下晃動</span><b id="rGunY">—</b><small>射手 ROI 高度 %</small></article>
+        <article><span>槍枝水平晃動</span><b id="rGunX">—</b><small>射手 ROI 寬度 %</small></article>
+        <article><span>疑似擊發峰值</span><b id="rShots">—</b><small>需由教練確認</small></article>
+      </div>
+      <div class="caution"><b>量測邊界</b><p>所有數值為單鏡頭影像估算，會受到拍攝角度、人物像素、遮擋、壓縮、相機防震與骨架模型誤差影響。小數位不代表儀器精度；不得取代瞄準軌跡儀、光學動作捕捉、醫療判斷或教練專業判讀。</p></div>
+    </section>
+  </main>
+
+  <footer><div><b>RapidFire Lab</b><span>25 公尺快射影像分析</span></div><div class="credits"><span>發明人／製作人：臺北市立大學運動健康科學系 傅思凱教授</span><small>© 2026 臺北市立大學運動健康科學系 傅思凱教授。保留所有權利。</small></div></footer>
+  <script type="module" src="app.js?v=1"></script>
+</body>
+</html>
