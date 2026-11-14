@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="roi-seek.css?v=4">
   <link rel="stylesheet" href="sync-lock.css?v=5">
   <link rel="stylesheet" href="sync-lock-state.css?v=5">
+  <link rel="stylesheet" href="trial-display.css?v=6">
 </head>
 <body>
   <header class="topbar">
@@ -73,6 +74,7 @@
         <div class="settings">
           <label>持槍側<select id="armSide"><option value="right">右手</option><option value="left">左手</option></select></label>
           <label>分析上限<select id="sampleRate"><option value="15">15 FPS・省電</option><option value="30" selected>30 FPS</option><option value="60">60 FPS</option></select></label>
+          <label class="check"><input id="stabilizerToggle" type="checkbox" checked>自適應骨架穩定化</label>
           <label class="check"><input id="skeletonToggle" type="checkbox" checked>顯示骨架與動態角度</label>
         </div>
       </section>
@@ -87,8 +89,12 @@
             <article><span>軀幹側傾</span><b id="trunkAngle">—</b><small>相對垂直線</small></article>
             <article><span>槍枝上下位移</span><b id="gunY">—</b><small>相對射手 ROI 高度</small></article>
           </div>
+          <div class="trial-live-grid">
+            <article><header><b>試次 A 判讀</b><span id="liveNameA">等待分析</span></header><p id="liveValuesA">肩 —・肘 —・軀幹 —・槍枝 —</p></article>
+            <article><header><b>試次 B 判讀</b><span id="liveNameB">選用</span></header><p id="liveValuesB">肩 —・肘 —・軀幹 —・槍枝 —</p></article>
+          </div>
         </section>
-        <section class="panel chart-card"><div class="panel-head"><div><p class="kicker">TIME SERIES</p><h2>角度與穩定度時間軸</h2></div><span id="sampleCount">0 格</span></div><div class="chart-toggles"><label><input type="checkbox" data-series="shoulder" checked>肩抬舉角</label><label><input type="checkbox" data-series="elbow" checked>肘屈曲角</label><label><input type="checkbox" data-series="trunk" checked>軀幹</label><label><input type="checkbox" data-series="gy" checked>槍枝 Y</label></div><canvas id="chart" width="760" height="390" aria-label="角度與穩定度時間序列圖"></canvas><div class="legend"><span class="lime">肩抬舉角 °</span><span class="blue">肘屈曲角 °</span><span class="amber">軀幹 °</span><span class="pink">槍枝 Y %ROI</span></div></section>
+        <section class="panel chart-card"><div class="panel-head"><div><p class="kicker">TIME SERIES</p><h2>角度與穩定度時間軸</h2></div><span id="sampleCount">0 格</span></div><div class="chart-toggles"><label><input type="checkbox" data-series="shoulder" checked>肩抬舉角</label><label><input type="checkbox" data-series="elbow" checked>肘屈曲角</label><label><input type="checkbox" data-series="trunk" checked>軀幹</label><label><input type="checkbox" data-series="gy" checked>槍枝 Y</label></div><canvas id="chart" width="760" height="390" aria-label="試次 A 與 B 的角度與穩定度時間序列圖"></canvas><div class="legend"><span class="lime">肩抬舉角 °</span><span class="blue">肘屈曲角 °</span><span class="amber">軀幹 °</span><span class="pink">槍枝 Y %ROI</span><span>實線 A・虛線 B</span></div></section>
       </aside>
     </section>
 
@@ -137,6 +143,6 @@
     <div><b>RapidFire Lab</b><span>25 公尺快射影像分析</span></div>
     <div class="credits"><small>© 2026 臺北市立大學運動健康科學系 傅思凱教授。保留所有權利。</small></div>
   </footer>
-  <script type="module" src="app.js?v=5"></script>
+  <script type="module" src="app.js?v=6"></script>
 </body>
 </html>

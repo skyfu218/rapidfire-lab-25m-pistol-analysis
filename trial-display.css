@@ -1,0 +1,6 @@
+.trial-live-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+.trial-live-grid article { padding:11px; border:1px solid #244239; border-radius:13px; background:#0b1915; }
+.trial-live-grid header { display:flex; justify-content:space-between; gap:8px; font-size:11px; }
+.trial-live-grid header span { overflow:hidden; color:var(--muted); text-overflow:ellipsis; white-space:nowrap; }
+.trial-live-grid p { margin:8px 0 0; color:#cbd9d4; font-size:11px; line-height:1.6; }
+@media (max-width:420px) { .trial-live-grid { grid-template-columns:1fr; } }
