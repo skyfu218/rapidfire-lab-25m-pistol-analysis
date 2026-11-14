@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://storage.googleapis.com" crossorigin>
   <link rel="stylesheet" href="styles.css?v=2">
   <link rel="stylesheet" href="single-shot.css?v=2">
+  <link rel="stylesheet" href="comparison.css?v=3">
 </head>
 <body>
   <header class="topbar">
@@ -46,7 +47,7 @@
           <div class="loading hidden" id="loading"><i></i>姿態模型載入中…</div>
         </div>
         <div class="actions">
-          <button class="button primary" id="uploadBtn">匯入影片</button><input id="fileInput" type="file" accept="video/*" hidden>
+          <button class="button primary" id="uploadBtn">匯入第一部影片</button><input id="fileInput" type="file" accept="video/*" hidden>
           <button class="button" id="cameraBtn">啟動相機</button>
           <button class="button" id="demoBtn">體驗示範</button>
           <button class="button" id="athleteBtn" disabled>框選射手 ROI</button>
@@ -54,6 +55,7 @@
           <button class="button" id="signalBtn" disabled>點選綠燈 ROI（選用）</button>
           <button class="button ghost" id="resetBtn" disabled>重設 ROI</button>
         </div>
+        <div class="trial-status" aria-label="雙影片分析進度"><span id="trial1Status" class="active"><b>試次 A</b>等待第一部影片</span><i>→</i><span id="trial2Status"><b>試次 B</b>完成 A 後匯入</span><i>→</i><span id="compareStatus"><b>同步比較</b>等待兩次分析</span></div>
         <div class="range-box hidden" id="rangeBox">
           <div class="range-head"><b>選取單次射擊區間</b><span><i id="startLabel">00:00.0</i> — <i id="endLabel">00:00.0</i></span></div>
           <label>開始<input id="rangeStart" type="range" min="0" max="10" step="0.05" value="0"></label>
@@ -73,14 +75,22 @@
           <div class="panel-head"><div><p class="kicker">LIVE ESTIMATE</p><h2>即時判讀</h2></div><strong id="score">—</strong></div>
           <p class="score-note" id="scoreNote">完成雙 ROI 設定後開始追蹤。</p>
           <div class="metrics">
-            <article><span>肩臂投影角</span><b id="shoulderAngle">—</b><small>單鏡頭姿態推估，受拍攝視角影響</small></article>
-            <article><span>持槍肘角</span><b id="elbowAngle">—</b><small>完全伸直接近 180°</small></article>
+            <article><span>肩關節抬舉角</span><b id="shoulderAngle">—</b><small>垂下 0°・水平 90°・頭上 180°</small></article>
+            <article><span>肘關節屈曲角</span><b id="elbowAngle">—</b><small>完全伸直為 0°</small></article>
             <article><span>軀幹側傾</span><b id="trunkAngle">—</b><small>相對垂直線</small></article>
             <article><span>槍枝上下位移</span><b id="gunY">—</b><small>相對射手 ROI 高度</small></article>
           </div>
         </section>
-        <section class="panel chart-card"><div class="panel-head"><div><p class="kicker">TIME SERIES</p><h2>角度與穩定度時間軸</h2></div><span id="sampleCount">0 格</span></div><canvas id="chart" width="760" height="390"></canvas><div class="legend"><span class="lime">肩臂角</span><span class="blue">肘角</span><span class="amber">軀幹</span><span class="pink">槍枝 Y</span></div></section>
+        <section class="panel chart-card"><div class="panel-head"><div><p class="kicker">TIME SERIES</p><h2>角度與穩定度時間軸</h2></div><span id="sampleCount">0 格</span></div><div class="chart-toggles"><label><input type="checkbox" data-series="shoulder" checked>肩抬舉角</label><label><input type="checkbox" data-series="elbow" checked>肘屈曲角</label><label><input type="checkbox" data-series="trunk" checked>軀幹</label><label><input type="checkbox" data-series="gy" checked>槍枝 Y</label></div><canvas id="chart" width="760" height="390" aria-label="角度與穩定度時間序列圖"></canvas><div class="legend"><span class="lime">肩抬舉角 °</span><span class="blue">肘屈曲角 °</span><span class="amber">軀幹 °</span><span class="pink">槍枝 Y %ROI</span></div></section>
       </aside>
+    </section>
+
+    <section class="panel comparison" id="comparison">
+      <div class="panel-head"><div><p class="kicker">A / B SYNC COMPARE</p><h2>兩次動作同步比較</h2></div><span class="quality" id="syncState">等待兩次分析</span></div>
+      <div class="sync-actions"><button class="button active" id="syncLiftBtn" disabled>以舉槍點同步</button><button class="button" id="syncShotBtn" disabled>以射擊點同步</button><button class="button" id="syncPlayBtn" disabled>同步播放</button></div>
+      <div class="compare-videos"><article><header><b>試次 A</b><span id="compareName1">尚未分析</span></header><video id="compareVideo1" playsinline muted></video></article><article><header><b>試次 B</b><span id="compareName2">尚未分析</span></header><video id="compareVideo2" playsinline muted></video></article></div>
+      <div class="sync-timeline"><div><b id="syncLabel">同步點 0.00 s</b><span>拖動時，兩部影片與下方數值會一起更新</span></div><input id="syncSlider" type="range" min="-1" max="2" step="0.01" value="0" disabled><div class="event-rail"><i class="lift-mark">舉槍點</i><i class="shot-mark">射擊點</i></div></div>
+      <div class="compare-table" role="table" aria-label="雙試次即時角度比較"><div class="thead" role="row"><b>同步時點數值</b><b>試次 A</b><b>試次 B</b><b>差值 B−A</b></div><div role="row"><span>肩抬舉角（°）</span><b id="cShoulder1">—</b><b id="cShoulder2">—</b><b id="dShoulder">—</b></div><div role="row"><span>肘屈曲角（°）</span><b id="cElbow1">—</b><b id="cElbow2">—</b><b id="dElbow">—</b></div><div role="row"><span>軀幹側傾（°）</span><b id="cTrunk1">—</b><b id="cTrunk2">—</b><b id="dTrunk">—</b></div><div role="row"><span>槍枝上下位移（% ROI）</span><b id="cGun1">—</b><b id="cGun2">—</b><b id="dGun">—</b></div><div role="row"><span>舉槍完成相對高度（% ROI）</span><b id="cHeight1">—</b><b id="cHeight2">—</b><b id="dHeight">—</b></div><div role="row"><span>擊發後最大跳動（% ROI）</span><b id="cRecoil1">—</b><b id="cRecoil2">—</b><b id="dRecoil">—</b></div><div role="row"><span>回復時間（s）</span><b id="cRecovery1">—</b><b id="cRecovery2">—</b><b id="dRecovery">—</b></div></div>
     </section>
 
     <section class="panel shot-story" id="shotStory">
@@ -101,12 +111,15 @@
       <div class="panel-head"><div><p class="kicker">SINGLE-SHOT SUMMARY</p><h2>單次射擊穩定性</h2></div><div class="actions"><button class="button" id="csvBtn" disabled>匯出 CSV</button><button class="button" id="reportBtn" disabled>下載 PNG 報告</button></div></div>
       <div class="result-empty" id="resultEmpty">完成一發分析後，這裡會整理穩定區內的關節角度變異、槍枝晃動與疑似擊發事件。</div>
       <div class="result-grid hidden" id="resultGrid">
-        <article><span>肩臂角變異</span><b id="rShoulder">—</b><small>標準差</small></article>
-        <article><span>肘角變異</span><b id="rElbow">—</b><small>標準差</small></article>
+        <article><span>肩抬舉角變異</span><b id="rShoulder">—</b><small>標準差</small></article>
+        <article><span>肘屈曲角變異</span><b id="rElbow">—</b><small>標準差</small></article>
         <article><span>軀幹傾角變異</span><b id="rTrunk">—</b><small>標準差</small></article>
         <article><span>槍枝上下晃動</span><b id="rGunY">—</b><small>射手 ROI 高度 %</small></article>
         <article><span>槍枝水平晃動</span><b id="rGunX">—</b><small>射手 ROI 寬度 %</small></article>
         <article><span>疑似擊發事件</span><b id="rShots">—</b><small>本版只取單一候選</small></article>
+        <article><span>舉槍完成相對高度</span><b id="rHeight">—</b><small>相對射手 ROI 高度 %</small></article>
+        <article><span>擊發後最大跳動</span><b id="rRecoil">—</b><small>向上位移 % ROI</small></article>
+        <article><span>槍枝回復時間</span><b id="rRecovery">—</b><small>回到擊發前穩定帶</small></article>
       </div>
       <div class="caution"><b>量測邊界與聲明</b><p>所有數值為單鏡頭影像估算（單鏡頭姿態推估，受拍攝視角影響），會受到拍攝角度、人物像素、遮擋、壓縮、相機防震與骨架模型誤差影響。小數位不代表儀器精度；不得宣告為臨床級或真實 3D 關節角，不得取代瞄準軌跡儀、光學動作捕捉、醫療判斷或教練專業判讀。</p></div>
     </section>
@@ -116,6 +129,6 @@
     <div><b>RapidFire Lab</b><span>25 公尺快射影像分析</span></div>
     <div class="credits"><small>© 2026 臺北市立大學運動健康科學系 傅思凱教授。保留所有權利。</small></div>
   </footer>
-  <script type="module" src="app.js?v=2"></script>
+  <script type="module" src="app.js?v=3"></script>
 </body>
 </html>
