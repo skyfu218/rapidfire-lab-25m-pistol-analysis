@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="styles.css?v=2">
   <link rel="stylesheet" href="single-shot.css?v=2">
   <link rel="stylesheet" href="comparison.css?v=3">
+  <link rel="stylesheet" href="roi-seek.css?v=4">
 </head>
 <body>
   <header class="topbar">
@@ -45,6 +46,10 @@
           <div class="empty" id="empty"><div class="target"><i></i></div><h3>匯入快射影片開始</h3><p>建議使用固定腳架、60 fps、完整拍到持槍手與軀幹。</p></div>
           <div class="guide" id="guide">先匯入影片</div>
           <div class="loading hidden" id="loading"><i></i>姿態模型載入中…</div>
+        </div>
+        <div class="roi-seek hidden" id="roiSeekBox">
+          <div><b>ROI 定位時間軸</b><span>先拖到已舉槍、槍枝清楚可見的畫面，再點選槍枝 ROI</span></div>
+          <div class="seek-controls"><button class="button ghost" id="seekBackBtn" aria-label="向前一格">−1 格</button><button class="button" id="seekPlayBtn">播放</button><input id="roiSeek" type="range" min="0" max="1" step="0.01" value="0" aria-label="ROI 定位時間軸"><button class="button ghost" id="seekForwardBtn" aria-label="向後一格">+1 格</button><b id="roiSeekLabel">00:00.0</b></div>
         </div>
         <div class="actions">
           <button class="button primary" id="uploadBtn">匯入第一部影片</button><input id="fileInput" type="file" accept="video/*" hidden>
@@ -129,6 +134,6 @@
     <div><b>RapidFire Lab</b><span>25 公尺快射影像分析</span></div>
     <div class="credits"><small>© 2026 臺北市立大學運動健康科學系 傅思凱教授。保留所有權利。</small></div>
   </footer>
-  <script type="module" src="app.js?v=3"></script>
+  <script type="module" src="app.js?v=4"></script>
 </body>
 </html>
