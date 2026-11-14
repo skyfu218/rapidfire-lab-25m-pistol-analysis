@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "pulselens-fitness-skyfu218"
+  },
+  "targets": {
+    "pulselens-fitness-skyfu218": {
+      "hosting": {
+        "rapidfire-lab": [
+          "rapidfire-lab-skyfu218"
+        ]
+      }
+    }
+  }
+}

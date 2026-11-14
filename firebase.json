@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "target": "rapidfire-lab",
     "public": ".",
     "ignore": ["firebase.json", ".firebaserc", ".git/**", "README.md", "AGENTS.md"],
     "headers": [{"source":"**/*.@(js|css)","headers":[{"key":"Cache-Control","value":"public,max-age=3600"}]}],
