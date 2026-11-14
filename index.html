@@ -13,12 +13,12 @@
 <body>
   <header class="topbar">
     <a class="brand" href="#"><span class="brand-mark"><i></i></span><span><b>RapidFire Lab</b><small>25M PISTOL MOTION ANALYSIS</small></span></a>
-    <span class="privacy"><i></i>影片只在本機處理</span>
+    <span class="privacy"><i></i>影片只在瀏覽器本機處理</span>
   </header>
 
   <main>
     <section class="hero">
-      <div><p class="eyebrow">RAPID FIRE · POSE · GUN ROI · STABILITY</p><h1>看見每一組快射的動作一致性</h1><p>以單鏡頭骨架與雙 ROI，對照肩臂投影角、肘角、軀幹控制、槍枝晃動與疑似擊發後回復節奏。</p></div>
+      <div><p class="eyebrow">RAPID FIRE · POSE · GUN ROI · STABILITY</p><h1>看見每一組快射的動作一致性</h1><p>以單鏡頭骨架與雙 ROI，對照肩臂投影角、肘角、軀幹控制、槍枝晃動與疑似擊發後回復節奏。（註：單鏡頭姿態推估，受拍攝視角影響）</p></div>
       <div class="hero-state"><span id="stateDot"></span><b id="stateText">等待影片</b><small id="timeText">00:00.0</small></div>
     </section>
 
@@ -56,7 +56,7 @@
         <div class="settings">
           <label>持槍側<select id="armSide"><option value="right">右手</option><option value="left">左手</option></select></label>
           <label>分析上限<select id="sampleRate"><option value="15">15 FPS・省電</option><option value="30" selected>30 FPS</option><option value="60">60 FPS</option></select></label>
-          <label class="check"><input id="skeletonToggle" type="checkbox" checked>顯示骨架</label>
+          <label class="check"><input id="skeletonToggle" type="checkbox" checked>顯示骨架與動態角度</label>
         </div>
       </section>
 
@@ -65,7 +65,7 @@
           <div class="panel-head"><div><p class="kicker">LIVE ESTIMATE</p><h2>即時判讀</h2></div><strong id="score">—</strong></div>
           <p class="score-note" id="scoreNote">完成雙 ROI 設定後開始追蹤。</p>
           <div class="metrics">
-            <article><span>肩臂投影角</span><b id="shoulderAngle">—</b><small>2D 投影，非純肩屈曲</small></article>
+            <article><span>肩臂投影角</span><b id="shoulderAngle">—</b><small>單鏡頭姿態推估，受拍攝視角影響</small></article>
             <article><span>持槍肘角</span><b id="elbowAngle">—</b><small>完全伸直接近 180°</small></article>
             <article><span>軀幹側傾</span><b id="trunkAngle">—</b><small>相對垂直線</small></article>
             <article><span>槍枝上下位移</span><b id="gunY">—</b><small>相對射手 ROI 高度</small></article>
@@ -86,11 +86,14 @@
         <article><span>槍枝水平晃動</span><b id="rGunX">—</b><small>射手 ROI 寬度 %</small></article>
         <article><span>疑似擊發峰值</span><b id="rShots">—</b><small>需由教練確認</small></article>
       </div>
-      <div class="caution"><b>量測邊界</b><p>所有數值為單鏡頭影像估算，會受到拍攝角度、人物像素、遮擋、壓縮、相機防震與骨架模型誤差影響。小數位不代表儀器精度；不得取代瞄準軌跡儀、光學動作捕捉、醫療判斷或教練專業判讀。</p></div>
+      <div class="caution"><b>量測邊界與聲明</b><p>所有數值為單鏡頭影像估算（單鏡頭姿態推估，受拍攝視角影響），會受到拍攝角度、人物像素、遮擋、壓縮、相機防震與骨架模型誤差影響。小數位不代表儀器精度；不得宣告為臨床級或真實 3D 關節角，不得取代瞄準軌跡儀、光學動作捕捉、醫療判斷或教練專業判讀。</p></div>
     </section>
   </main>
 
-  <footer><div><b>RapidFire Lab</b><span>25 公尺快射影像分析</span></div><div class="credits"><span>發明人／製作人：臺北市立大學運動健康科學系 傅思凱教授</span><small>© 2026 臺北市立大學運動健康科學系 傅思凱教授。保留所有權利。</small></div></footer>
+  <footer>
+    <div><b>RapidFire Lab</b><span>25 公尺快射影像分析</span></div>
+    <div class="credits"><span>發明人／製作人：臺北市立大學運動健康科學系 傅思凱教授</span><small>© 2026 臺北市立大學運動健康科學系 傅思凱教授。保留所有權利。</small></div>
+  </footer>
   <script type="module" src="app.js?v=1"></script>
 </body>
 </html>
